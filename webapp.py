@@ -17,8 +17,12 @@ def render_fact():
     states = get_state_options()
     state = request.args.get('state')
     county = county_most_under_18(state)
+    county2 = persons_below_poverty_line(state)
+    county3 = asians_alone(state)
     fact = "In " + state + ", the county with the highest percentage of under 18 year olds is " + county + "."
-    return render_template('home.html', state_options=states, funFact=fact)
+    facts = "In " + state + ", the county with the highest percentage of persons below the poverty line is " + county2 + "."
+    facts2 = "In " + state + ", the county with the highest percentage of asians alone is " + county3 + "."
+    return render_template('home.html', state_options=states, funFact=fact, funFacts=facts, funFacts2=facts2)
     
 def get_state_options():
     """Return the html code for the drop down menu.  Each option is a state abbreviation from the demographic data."""
@@ -45,7 +49,33 @@ def county_most_under_18(state):
                 highest = c["Age"]["Percent Under 18 Years"]
                 county = c["County"]
     return county
+    
+def persons_below_poverty_line(state):
+    with open('demographics.json') as demographics_data:
+       counties = json.load(demographics_data)
+    highest=0
+    county = ""
+    for c in counties:
+        if c["State"] == state:
+            if c["Income"]["Persons Below Poverty Level"] > highest:
+                highest = c["Income"]["Persons Below Poverty Level"]
+                county = c["County"]
+    return county
+    
+def asians_alone(state):
+    with open('demographics.json') as demographics_data:
+       counties = json.load(demographics_data)
+    highest=0
+    county = ""
+    for c in counties:
+        if c["State"] == state:
+            if c["Ethnicities"]["Asian Alone"] > highest:
+                highest = c["Ethnicities"]["Asian Alone"]
+                county = c["County"]
+    return county
+        
 
+    
 def is_localhost():
     """ Determines if app is running on localhost or not
     Adapted from: https://stackoverflow.com/questions/17077863/how-to-see-if-a-flask-app-is-being-run-on-localhost
@@ -56,4 +86,4 @@ def is_localhost():
 
 
 if __name__ == '__main__':
-    app.run(debug=False) # change to False when running in production
+    app.run(debug=True) # change to False when running in production
